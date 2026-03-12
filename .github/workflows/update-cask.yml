@@ -1,0 +1,58 @@
+name: Update Cask
+
+on:
+  repository_dispatch:
+    types: [update-cask]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Validate tag format
+        run: |
+          TAG="${{ github.event.client_payload.tag }}"
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid tag format: $TAG"
+            exit 0
+          fi
+          echo "VERSION=${TAG#v}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v4
+
+      - name: Download release asset
+        run: |
+          for i in 1 2 3; do
+            if curl -fSL -o /tmp/Calyx.zip \
+              "https://github.com/yuuichieguchi/Calyx/releases/download/${{ github.event.client_payload.tag }}/Calyx.zip"; then
+              break
+            fi
+            echo "Retry $i/3..."
+            sleep 30
+          done
+
+      - name: Compute SHA256
+        run: echo "SHA256=$(sha256sum /tmp/Calyx.zip | cut -d' ' -f1)" >> $GITHUB_ENV
+
+      - name: Update cask
+        run: |
+          sed -i "s/version \".*\"/version \"$VERSION\"/" Casks/calyx.rb
+          sed -i "s/sha256 \".*\"/sha256 \"$SHA256\"/" Casks/calyx.rb
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/calyx.rb
+          git commit -m "Update calyx to $VERSION"
+          git push
