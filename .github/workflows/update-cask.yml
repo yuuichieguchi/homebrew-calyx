@@ -7,7 +7,8 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
-    environment: production
+    permissions:
+      contents: write
     steps:
       - name: Validate tag format
         run: |
