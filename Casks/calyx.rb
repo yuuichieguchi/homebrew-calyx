@@ -1,6 +1,6 @@
 cask "calyx" do
-  version "0.24.1"
-  sha256 "1da392ae4f938f322e8c7267d3eb12d59bce874796e5a1803bb7e69e02480c34"
+  version "0.25.0"
+  sha256 "7398c81b75ef19560b8a449a0d3eff6ce7360cfa66ffab5656c8eb153b98ccfa"
 
   url "https://github.com/yuuichieguchi/Calyx/releases/download/v#{version}/Calyx.zip"
   name "Calyx"
