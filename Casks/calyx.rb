@@ -7,7 +7,7 @@ cask "calyx" do
   desc "macOS terminal built on libghostty with Liquid Glass UI"
   homepage "https://github.com/yuuichieguchi/Calyx"
 
-  depends_on macos: ">= :sequoia"
+  depends_on macos: :sequoia
 
   app "Calyx.app"
 end
